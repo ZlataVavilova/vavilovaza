@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крутой калькулятор</title>
+    <style>
+        /* CSS переменные для удобного управления цветовой схемой */
+        :root {
+            --primary: #6c5ce7;     /* Основной цвет - фиолетовый */
+            --secondary: #a29bfe;   /* Вторичный цвет - светлый фиолетовый */
+            --dark: #2d3436;       /* Темный цвет для текста */
+            --light: #f5f6fa;      /* Светлый фон */
+            --accent: #fd79a8;     /* Акцентный цвет - розовый */
+            --shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Тень по умолчанию */
+			--special: #00b894;  /* Новый цвет для специальных функций */
+        }
+        
+        /* Сброс стандартных стилей браузера */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Центрирование калькулятора на странице */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        /* Основной контейнер калькулятора */
+        .calculator {
+            width: 320px;
+            background-color: white;
+            border-radius: 25px;          /* Закругленные углы */
+            box-shadow: var(--shadow);    /* Тень */
+            overflow: hidden;             /* Скрытие содержимого за границами */
+            transition: transform 0.3s ease; /* Плавное преобразование */
+        }
+        
+        /* Эффект при наведении на калькулятор */
+        .calculator:hover {
+            transform: translateY(-5px);  /* Поднимаем немного вверх */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Увеличиваем тень */
+        }
+        
+        /* Стили для дисплея калькулятора */
+        .display {
+            padding: 25px;
+            text-align: right;           /* Выравнивание текста по правому краю */
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            height: 140px;
+            display: flex;
+            flex-direction: column;      /* Вертикальное расположение элементов */
+            justify-content: flex-end;    /* Прижимаем контент к низу */
+            position: relative;
+        }
+        
+        /* Декоративная линия под дисплеем */
+        .display::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Стили для предыдущего операнда (верхняя строка дисплея) */
+        .previous-operand {
+            font-size: 1.2rem;
+            opacity: 0.8;                 /* Полупрозрачный текст */
+            height: 24px;
+            overflow: hidden;             /* Скрытие выходящего за границы текста */
+            transition: all 0.3s ease;    /* Плавные анимации */
+        }
+        
+        /* Стили для текущего операнда (основная строка дисплея) */
+        .current-operand {
+            font-size: 2.8rem;
+            margin-top: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;     /* Многоточие при переполнении */
+            font-weight: 300;            /* Более тонкий шрифт */
+            transition: all 0.3s ease;
+        }
+		
+        /* Стили для специальных кнопок */
+        .special {
+            background-color: #f8f9fa;
+            color: var(--special);
+            font-weight: 500;
+        }
+        
+        .special:hover {
+            background-color: #e8f9f1;
+        }
+		
+        /* Сетка кнопок калькулятора */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 колонки равной ширины */
+            gap: 1px;                    /* Минимальный промежуток между кнопками */
+            background-color: rgba(0, 0, 0, 0.05); /* Фон для видимости промежутков */
+        }
+        
+        /* Базовые стили для кнопок */
+        button {
+            border: none;
+            outline: none;
+            padding: 20px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            background-color: white;
+            transition: all 0.2s ease;   /* Плавные изменения */
+            position: relative;
+            overflow: hidden;           /* Для эффекта волны */
+        }
+        
+        /* Псевдоэлемент для эффекта волны при нажатии */
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        /* Анимация эффекта волны при активном состоянии */
+        button:active::after {
+            animation: ripple 0.6s ease-out;
+        }
+        
+        /* Кейфреймы для анимации волны */
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        /* Эффект при наведении на кнопку */
+        button:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Эффект при нажатии кнопки */
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        /* Стили для операторов (+, -, *, / и т.д.) */
+        .operator {
+            background-color: #f8f9fa;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        /* Эффект при наведении на оператор */
+        .operator:hover {
+            background-color: #e9ecef;
+        }
+        
+        /* Стили для кнопки равно */
+        .equals {
+            background: linear-gradient(to right, var(--accent), #ff9ff3);
+            color: white;
+            grid-column: span 2;        /* Занимает 2 колонки */
+            font-weight: 500;
+        }
+        
+        /* Эффект при наведении на кнопку равно */
+        .equals:hover {
+            opacity: 0.9;
+        }
+        
+        /* Стили для кнопок очистки и удаления */
+        .clear, .delete {
+            color: #ff7675;             /* Красный цвет */
+        }
+        
+        /* Эффект при наведении на кнопки очистки/удаления */
+        .clear:hover, .delete:hover {
+            background-color: #fff5f5;  /* Светло-красный фон */
+        }
+        
+        /* Анимация нажатия кнопки */
+        @keyframes buttonPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Класс для анимации нажатия */
+        .pressed {
+            animation: buttonPress 0.3s ease;
+        }
+		
+		/* Адаптируем сетку кнопок */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 1px;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Делаем кнопку равно шире */
+        .equals {
+            grid-column: span 3;  /* Теперь занимает 3 колонки */
+        }
+		
+    </style>
+</head>
+<body>
+    <!-- Основная структура калькулятора -->
+    <div class="calculator">
+        <!-- Дисплей калькулятора -->
+        <div class="display">
+            <div class="previous-operand" id="previous-operand"></div>
+            <div class="current-operand" id="current-operand">0</div>
+        </div>
+        
+        <!-- Кнопки калькулятора -->
+        <div class="buttons">
+            <!-- Первый ряд кнопок -->
+			<button class="operator" onclick="appendOperator('%')">%</button>
+			<button class="special" onclick="calculateReciprocal()">1/x</button>
+            <button class="clear" onclick="clearAll()">AC</button>
+            <button class="delete" onclick="deleteLast()">DEL</button>
+            
+            <!-- Второй ряд кнопок -->
+            <button class="special" onclick="calculateSquare()">x²</button>
+            <button class="special" onclick="calculateSquareRoot()">√x</button>
+			<button class="operator" onclick="appendOperator('/')">/</button>
+			<button class="operator" onclick="appendOperator('*')">×</button>
+            
+            <!-- Третий ряд кнопок -->
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+			<button class="operator" onclick="appendOperator('-')">-</button>
+			
+            <!-- Четвертый ряд кнопок -->
+			<button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+			<button class="operator" onclick="appendOperator('+')">+</button>
+			
+			<!-- Пятый ряд кнопок -->
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button onclick="appendNumber('.')">.</button>
+			
+            <!-- Шестой ряд кнопок -->
+            <button onclick="appendNumber('0')">0</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        // Переменные для хранения состояния калькулятора
+        let currentOperand = '0';      // Текущее число на дисплее
+        let previousOperand = '';      // Предыдущее число и операция
+        let operation = undefined;     // Текущая операция (+, -, *, /)
+        let resetScreen = false;       // Флаг для сброса экрана после операции
+
+        // Получаем элементы дисплея
+        const currentOperandElement = document.getElementById('current-operand');
+        const previousOperandElement = document.getElementById('previous-operand');
+
+        // Функция обновления дисплея
+        function updateDisplay() {
+            currentOperandElement.innerText = currentOperand;
+            previousOperandElement.innerText = previousOperand;
+        }
+
+        // Добавление цифры или точки на дисплей
+        function appendNumber(number) {
+            // Если экран нужно сбросить или показывается 0, начинаем новое число
+            if (currentOperand === '0' || resetScreen) {
+                currentOperand = '';
+                resetScreen = false;
+            }
+            // Проверка на дублирование точки
+            if (number === '.' && currentOperand.includes('.')) return;
+            currentOperand += number;
+            updateDisplay();
+            addButtonEffect(event.target); // Эффект нажатия
+        }
+		// Функция для вычисления обратного значения (1/x)
+        function calculateReciprocal() {
+            const num = parseFloat(currentOperand);
+            if (num === 0) {
+                currentOperand = "Ошибка";
+                return;
+            }
+            currentOperand = (1 / num).toString();
+            updateDisplay();
+            addButtonEffect(event.target);
+        }
+        
+        // Функция для вычисления квадрата числа (x²)
+        function calculateSquare() {
+            const num = parseFloat(currentOperand);
+            currentOperand = (num * num).toString();
+            updateDisplay();
+            addButtonEffect(event.target);
+        }
+        
+        // Функция для вычисления квадратного корня (√x)
+        function calculateSquareRoot() {
+            const num = parseFloat(currentOperand);
+            if (num < 0) {
+                currentOperand = "Ошибка";
+            } else {
+                currentOperand = Math.sqrt(num).toString();
+            }
+            updateDisplay();
+            addButtonEffect(event.target);
+        }
+
+        // Выбор операции
+        function appendOperator(op) {
+            // Если нет текущего числа, ничего не делаем
+            if (currentOperand === '') return;
+            // Если есть предыдущая операция, сначала вычисляем ее
+            if (previousOperand !== '') {
+                calculate();
+            }
+            operation = op;
+            // Формируем строку для верхнего дисплея
+            previousOperand = `${currentOperand} ${operation}`;
+            currentOperand = '';
+            updateDisplay();
+            addButtonEffect(event.target);
+        }
+
+        // Выполнение вычисления
+        function calculate() {
+            let computation;
+            const prev = parseFloat(previousOperand);
+            const current = parseFloat(currentOperand);
+            
+            // Проверка на корректность чисел
+            if (isNaN(prev) || isNaN(current)) return;
+            
+            // Выполнение операции в зависимости от выбранного оператора
+            switch (operation) {
+                case '+':
+                    computation = prev + current;
+                    break;
+                case '-':
+                    computation = prev - current;
+                    break;
+                case '*':
+                    computation = prev * current;
+                    break;
+                case '/':
+                    computation = prev / current;
+                    break;
+                case '%':
+                    computation = prev % current;
+                    break;
+                default:
+                    return;
+            }
+            
+            // Обновление состояния калькулятора
+            currentOperand = computation.toString();
+            operation = undefined;
+            previousOperand = '';
+            resetScreen = true;
+            updateDisplay();
+            addButtonEffect(event.target);
+        }
+
+        // Очистка всего калькулятора
+        function clearAll() {
+            currentOperand = '0';
+            previousOperand = '';
+            operation = undefined;
+            updateDisplay();
+            addButtonEffect(event.target);
+        }
+
+        // Удаление последней цифры
+        function deleteLast() {
+            if (currentOperand.length === 1) {
+                currentOperand = '0';
+            } else {
+                currentOperand = currentOperand.slice(0, -1);
+            }
+            updateDisplay();
+            addButtonEffect(event.target);
+        }
+
+        // Добавление эффекта нажатия кнопки
+        function addButtonEffect(button) {
+            button.classList.add('pressed');
+            setTimeout(() => {
+                button.classList.remove('pressed');
+            }, 300);
+        }
+
+        // Обработка ввода с клавиатуры
+        document.addEventListener('keydown', (e) => {
+            const button = document.querySelector(`button[onclick*="${e.key}"]`);
+            if (button) addButtonEffect(button);
+            
+            if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+            else if (e.key === '.') appendNumber('.');
+            else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/' || e.key === '%') 
+                appendOperator(e.key);
+            else if (e.key === 'Enter' || e.key === '=') calculate();
+            else if (e.key === 'Escape') clearAll();
+            else if (e.key === 'Backspace') deleteLast();
+            
+            else if (e.key === 'r' || e.key === 'R') calculateReciprocal(); // 1/x
+            else if (e.key === 's' || e.key === 'S') calculateSquare();     // x²
+            else if (e.key === 'q' || e.key === 'Q') calculateSquareRoot(); // √x
+        });
+    </script>
+</body>
+</html>
