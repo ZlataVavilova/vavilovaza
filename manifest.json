@@ -1,21 +1,21 @@
 {
-  "name": "Крутой калькулятор",
-  "short_name": "Калькулятор",
-  "description": "Мощный калькулятор с дополнительными функциями",
-  "start_url": "/calculator/",
-  "display": "standalone",
-  "background_color": "#f5f6fa",
-  "theme_color": "#6c5ce7",
+  "short_name": "Calculator",
+  "name": "Calculator - PWA example",
   "icons": [
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "logo192.jpg",
+      "type": "image/jpg",
+      "sizes": "192x192"
     },
     {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
-  ]
+  ],
+  "start_url": "index.html",
+  "background_color": "#3367D6",
+  "display": "standalone",
+  "scope": "/calculator",
+  "theme_color": "#3367D6"
 }
