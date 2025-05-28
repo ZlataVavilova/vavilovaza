@@ -228,6 +228,9 @@
 		
     </style>
 </head>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#6c5ce7">
 <body>
     <!-- Основная структура калькулятора -->
     <div class="calculator">
@@ -438,5 +441,18 @@
             else if (e.key === 'q' || e.key === 'Q') calculateSquareRoot(); // √x
         });
     </script>
+	<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('serviceworker.js')
+      .then(registration => {
+        console.log('ServiceWorker registration successful');
+      })
+      .catch(err => {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+  });
+}
+</script>
 </body>
 </html>
